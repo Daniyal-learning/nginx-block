@@ -11,7 +11,7 @@ add_ip_to_deny_list() {
 
 # Read IPs from input until double enter
 echo "Enter IPs to block (one per line). Press Enter twice when done:"
-while read -r ip; do
+while read -r ip < /dev/tty ; do
     # Check if the line is empty (double enter)
     if [[ -z "$ip" ]]; then
         break
