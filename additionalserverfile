@@ -1,27 +1,32 @@
 #!/bin/bash
 
-# Prompt for the list of IPs
-echo "Enter the list of IPs (one per line, double enter to end):"
-ips=""
-while IFS= read -r line; do
-    if [ -z "$line" ]; then
+# Nginx additional configuration file
+nginx_conf="/etc/nginx/additional_server_conf"
+
+# Function to add IP to deny list
+add_ip_to_deny_list() {
+    ip="$1"
+    grep -q "$ip" "$nginx_conf" || echo "deny $ip;" | sudo tee -a "$nginx_conf"
+}
+
+# Read IPs from input until double enter
+echo "Enter IPs to block (one per line). Press Enter twice when done:"
+while read -r ip; do
+    # Check if the line is empty (double enter)
+    if [[ -z "$ip" ]]; then
         break
     fi
-    ips+="deny $line;\n"
+
+    # Add IP to deny list
+    add_ip_to_deny_list "$ip"
 done < /dev/tty
 
-# Server IP using myip command
-server_ip=$(myip)
-
-# Nginx configuration file path
-nginx_conf_path="/etc/nginx/additional_server_conf"
-
-# Append the IPs to the nginx configuration file
-echo -e "$ips" | sudo tee -a "$nginx_conf_path" > /dev/null
-
-# Reload nginx
+# Reload Nginx to apply changes
 sudo service nginx reload
 
-# Display success message
-echo "IPs added successfully. Nginx reloaded."
-echo "Server IP: $server_ip"
+# Display Nginx status and server IP
+nginx_status=$(sudo service nginx status)
+server_ip=$(curl -sS ifconfig.me)
+
+echo -e "\nNginx Status:\n$nginx_status"
+echo -e "\nServer IP:\n$server_ip"
