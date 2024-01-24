@@ -22,7 +22,7 @@ while read -r ip; do
 done < /dev/tty
 
 # Reload Nginx to apply changes
-sudo service nginx reload
+sudo service nginx restart
 
 # Display Nginx status and server IP
 nginx_status=$(sudo service nginx status)
