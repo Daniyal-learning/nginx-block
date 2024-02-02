@@ -3,29 +3,25 @@
 # Nginx additional configuration file
 nginx_conf="/etc/nginx/additional_server_conf"
 
-# Function to add IP to deny list
-add_ip_to_deny_list() {
-    ip="$1"
-    grep -q "$ip" "$nginx_conf" || echo "deny $ip;" | sudo tee -a "$nginx_conf"
+# List of CIDRs to block
+cidrs=("37.221.0.0/16" "12.219.0.0/16" "5.182.0.0/16" "94.156.0.0/16" "1.69.0.0/16" "38.51.0.0/16" "156.146.0.0/16" "45.141.0.0/16")
+
+# Function to add CIDR to deny list
+add_cidr_to_deny_list() {
+    cidr="$1"
+    grep -q "$cidr" "$nginx_conf" || echo "deny $cidr;" | sudo tee -a "$nginx_conf"
 }
 
-# Read IPs from input until double enter
-echo "Enter IPs to block (one per line). Press Enter twice when done:"
-while read -r ip; do
-    # Check if the line is empty (double enter)
-    if [[ -z "$ip" ]]; then
-        break
-    fi
-
-    # Add IP to deny list
-    add_ip_to_deny_list "$ip"
-done < /dev/tty
+# Add each CIDR to deny list
+for cidr in "${cidrs[@]}"; do
+    add_cidr_to_deny_list "$cidr"
+done
 
 # Reload Nginx to apply changes
-sudo service nginx restart
+/etc/init.d/nginx restart
 
 # Display Nginx status and server IP
-nginx_status=$(sudo service nginx status)
+nginx_status=$(/etc/init.d/nginx status)
 server_ip=$(curl -sS ifconfig.me)
 
 echo -e "\nNginx Status:\n$nginx_status"
