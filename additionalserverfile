@@ -25,5 +25,5 @@ nginx_status=$(/etc/init.d/nginx status)
 server_ip=$(curl -sS ifconfig.me)
 
 echo -e "\nNginx Status:\n$nginx_status"
-nginx -t
+nginx -t 
 echo -e "\nServer IP:\n$server_ip"
